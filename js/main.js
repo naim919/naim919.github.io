@@ -78,6 +78,64 @@ document.addEventListener('click', function(e) {
 });
 
 // ============================================================
+// CAROUSEL
+// ============================================================
+(function() {
+    var track  = document.getElementById('carouselTrack');
+    var dots   = document.querySelectorAll('.carousel__dot');
+    var prev   = document.getElementById('carouselPrev');
+    var next   = document.getElementById('carouselNext');
+
+    if (!track) return;
+
+    var total      = dots.length;
+    var current    = 0;
+    var autoTimer  = null;
+    var touchStartX = 0;
+
+    function goTo(index) {
+        current = (index + total) % total;
+        track.style.transform = 'translateX(-' + (current * 100) + '%)';
+        dots.forEach(function(d, i) {
+            d.classList.toggle('active', i === current);
+        });
+    }
+
+    function startAuto() {
+        autoTimer = setInterval(function() { goTo(current + 1); }, 5000);
+    }
+
+    function resetAuto() {
+        clearInterval(autoTimer);
+        startAuto();
+    }
+
+    prev.addEventListener('click', function() { goTo(current - 1); resetAuto(); });
+    next.addEventListener('click', function() { goTo(current + 1); resetAuto(); });
+
+    dots.forEach(function(dot) {
+        dot.addEventListener('click', function() {
+            goTo(parseInt(this.getAttribute('data-index')));
+            resetAuto();
+        });
+    });
+
+    track.addEventListener('touchstart', function(e) {
+        touchStartX = e.touches[0].clientX;
+    }, { passive: true });
+
+    track.addEventListener('touchend', function(e) {
+        var diff = touchStartX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 40) {
+            goTo(diff > 0 ? current + 1 : current - 1);
+            resetAuto();
+        }
+    }, { passive: true });
+
+    startAuto();
+})();
+
+// ============================================================
 // INIT
 // ============================================================
 applyLanguage(currentLang);
